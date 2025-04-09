@@ -1,39 +1,25 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// File to store the current name
-const NAME_FILE_PATH = path.join(__dirname, 'current_name.txt');
-
-// Function to read current name
-function getCurrentName() {
-    try {
-        return fs.readFileSync(NAME_FILE_PATH, 'utf8').trim() || 'Waiting for name...';
-    } catch (error) {
-        return 'Waiting for name...';
-    }
-}
-
-// Function to update name
-function updateName(name) {
-    fs.writeFileSync(NAME_FILE_PATH, name || 'Waiting for name...', 'utf8');
-}
+// Store the current name in memory
+let currentName = 'Waiting for name...';
 
 // Middleware
 app.use(bodyParser.json());
 app.use(express.static('public'));
+app.use(express.static(path.join(__dirname)));
 
 // Routes
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.get('/view', (req, res) => {
-    res.sendFile(__dirname + '/view.html');
+    res.sendFile(path.join(__dirname, 'view.html'));
 });
 
 // Endpoint to update name
@@ -45,13 +31,13 @@ app.post('/update-name', (req, res) => {
         return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    updateName(name);
-    res.json({ message: 'Name updated successfully', name: name });
+    currentName = name || 'Waiting for name...';
+    console.log('Name updated to:', currentName);
+    res.json({ message: 'Name updated successfully', name: currentName });
 });
 
 // Endpoint to get current name
 app.get('/get-name', (req, res) => {
-    const currentName = getCurrentName();
     res.json({ name: currentName });
 });
 
