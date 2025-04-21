@@ -22,6 +22,11 @@ app.get('/view', (req, res) => {
     res.sendFile(path.join(__dirname, 'view.html'));
 });
 
+// Add a new route for led.html
+app.get('/led', (req, res) => {
+    res.sendFile(path.join(__dirname, 'led.html'));
+});
+
 // Endpoint to update name
 app.post('/update-name', (req, res) => {
     const { name, password } = req.body;
