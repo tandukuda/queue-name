@@ -52,6 +52,35 @@
       width: auto;
     }
     
+    /* Loading percentage styles */
+    #loading-container {
+        position: fixed;
+        bottom: 2rem;
+        width: 100%;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        margin-top: 2rem;
+    }
+    
+    #loading-bar {
+        width: 60%;
+        max-width: 300px;
+        height: 6px;
+        background-color: #ddd;
+        margin: 10px auto;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    #loading-progress {
+        height: 100%;
+        background-color: #333;
+        width: 0%;
+        transition: width 0.8s ease;
+    }
+    
     .fadeIn {
         animation: fadeInAnimation 1s ease forwards;
     }
@@ -80,8 +109,30 @@
     <div id="displayName_none">ROASTING FOR</div>
     <div id="displayName" class="fadeIn">Waiting for name...</div>
 
+    <!-- Loading percentage display -->
+    <div id="loading-container">
+        <div id="loading-bar">
+            <div id="loading-progress"></div>
+        </div>
+        <div id="loading-text">Loading: 0%</div>
+    </div>
+
     <script>
         let currentDisplayedName = '';
+        let loadingPercentage = 0;
+        let loadingInterval;
+        let nameUpdateInterval;
+        
+        // Function to update the loading percentage
+        function updateLoadingBar() {
+            const loadingProgress = document.getElementById('loading-progress');
+            const loadingText = document.getElementById('loading-text');
+            
+            loadingPercentage = (loadingPercentage + 1) % 101;
+            
+            loadingProgress.style.width = `${loadingPercentage}%`;
+            loadingText.textContent = `Loading: ${loadingPercentage}%`;
+        }
         
         function updateName() {
             fetch('/get-name')
@@ -95,6 +146,11 @@
                         displayElement.classList.remove('fadeIn');
                         displayElement.classList.add('fadeOut');
                         
+                        // Reset loading and start fast progression
+                        loadingPercentage = 0;
+                        clearInterval(loadingInterval);
+                        loadingInterval = setInterval(updateLoadingBar, 30); // Faster for effect
+                        
                         // After fade out, update name and fade in
                         setTimeout(() => {
                             displayElement.textContent = data.name;
@@ -102,6 +158,12 @@
                             displayElement.classList.add('fadeIn');
                             
                             currentDisplayedName = data.name;
+                            
+                            // Return to normal loading speed after name changes
+                            setTimeout(() => {
+                                clearInterval(loadingInterval);
+                                loadingInterval = setInterval(updateLoadingBar, 200); // Back to normal speed
+                            }, 3000);
                         }, 500);
                     }
                 })
@@ -110,9 +172,18 @@
                 });
         }
 
+        // Initialize loading bar
+        loadingInterval = setInterval(updateLoadingBar, 200);
+        
         // Update name every 2 seconds
         updateName();
-        setInterval(updateName, 2000);
+        nameUpdateInterval = setInterval(updateName, 2000);
+        
+        // Clean up intervals when page is unloaded
+        window.addEventListener('beforeunload', () => {
+            clearInterval(loadingInterval);
+            clearInterval(nameUpdateInterval);
+        });
     </script>
 </body>
 </html>
