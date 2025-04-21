@@ -76,6 +76,24 @@
                 font-size: 0.9rem;
             }
         }
+
+    .fadeIn {
+        animation: fadeInAnimation 1s ease forwards;
+    }
+    
+    .fadeOut {
+        animation: fadeOutAnimation 0.5s ease forwards;
+    }
+    
+    @keyframes fadeInAnimation {
+        0% { opacity: 0; transform: translateY(0px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeOutAnimation {
+        0% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(0px); }
+    }
     </style>
 </head>
 <body>
