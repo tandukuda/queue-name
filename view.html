@@ -22,6 +22,15 @@
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
     }
+
+    #displayName_none {
+        font-size: 4rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }        
     
     #container {
         width: 100%;
@@ -59,11 +68,12 @@
     </style>
 </head>
 <body>
-    <div id="displayName">THE DARK SIDE</div>
+    <div id="displayName_none">THE DARK SIDE</div>
     <div id="logo-container">
         <img src="https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/H-01.png?v=1744016080389" alt="Logo" id="logo">
     </div>
 
+    <div id="displayName_none">ROASTING FOR</div>
     <div id="displayName" class="fadeIn">Waiting for name...</div>
 
     <script>
