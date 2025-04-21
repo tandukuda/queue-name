@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Name Display</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet">
+    <style>
+    body {
+      font-family: 'Special Gothic Expanded One', cursive, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background-color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 1rem;
+    }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            text-align: left;
+        }
+
+        .title {
+            font-size: 1.8rem;
+            color: #e6e6e6;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            letter-spacing: 2px;
+        }
+
+        .name {
+            font-size: 4rem;
+            color: white;
+            text-transform: uppercase;
+            margin: 1.5rem 0;
+            letter-spacing: 3px;
+            font-weight: bold;
+        }
+
+        .tagline {
+            font-size: 1rem;
+            color: #e6e6e6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2rem;
+        }
+
+        /* Adding subtle shadow effect to enhance readability */
+        .title, .name, .tagline {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        #displayName {
+        font-size: 4rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: left;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .title {
+                font-size: 1.5rem;
+            }
+            .name {
+                font-size: 3rem;
+            }
+            .tagline {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">THE DARKSIDE</div>
+ 
+        <div id="displayName" class="fadeIn">Waiting for name...</div>
+
+        <script>
+            let currentDisplayedName = '';
+            
+            function updateName() {
+                fetch('/get-name')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Only animate if the name has changed
+                        if (data.name !== currentDisplayedName) {
+                            let displayElement = document.getElementById('displayName');
+                            
+                            // Fade out current name
+                            displayElement.classList.remove('fadeIn');
+                            displayElement.classList.add('fadeOut');
+                            
+                            // After fade out, update name and fade in
+                            setTimeout(() => {
+                                displayElement.textContent = data.name;
+                                displayElement.classList.remove('fadeOut');
+                                displayElement.classList.add('fadeIn');
+                                
+                                currentDisplayedName = data.name;
+                            }, 500);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+    
+            // Update name every 2 seconds
+            updateName();
+            setInterval(updateName, 2000);
+        </script>
+
+        <div class="tagline">DO NOT LEAVE UNTIL THE LAST BEAN CRACKS</div>
+    </div>
+</body>
+</html>
