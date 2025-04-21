@@ -132,6 +132,15 @@
             
             loadingProgress.style.width = `${loadingPercentage}%`;
             loadingText.textContent = `Loading: ${loadingPercentage}%`;
+            
+            // Reset when it reaches 100%
+            if (loadingPercentage === 100) {
+                setTimeout(() => {
+                    loadingPercentage = 0;
+                    loadingProgress.style.width = '0%';
+                    loadingText.textContent = 'Loading: 0%';
+                }, 1000);
+            }
         }
         
         function updateName() {
