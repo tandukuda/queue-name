@@ -22,14 +22,6 @@
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
     }
-
-    #displayName_black {
-        font-size: 4rem;
-        font-weight: bold;
-        color: rgb(0, 0, 0);
-        text-align: center;
-        transition: opacity 0.5s ease, transform 0.5s ease;
-    }
     
     #container {
         width: 100%;
@@ -67,15 +59,12 @@
     </style>
 </head>
 <body>
-
-    <div id="displayName_black">THE DARK SIDE</div>
-
+    <div id="displayName">THE DARK SIDE</div>
     <div id="logo-container">
         <img src="https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/H-01.png?v=1744016080389" alt="Logo" id="logo">
     </div>
 
-    <div id="displayName_black">ROASTING FOR</div>
-    <div id="displayName_black" class="fadeIn">Waiting for name...</div>
+    <div id="displayName" class="fadeIn">Waiting for name...</div>
 
     <script>
         let currentDisplayedName = '';
