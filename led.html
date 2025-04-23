@@ -31,6 +31,7 @@
             text-transform: uppercase;
             margin-bottom: 2rem;
             letter-spacing: 2px;
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
         .name {
@@ -99,18 +100,19 @@
 </head>
 <body>
     <div class="container">
-        <div class="title">THE DARKSIDE</div>
+        <div id="displaySide" class="title fadeIn">THE DARKSIDE</div>
  
         <div id="displayName" class="fadeIn">Waiting for name...</div>
 
         <script>
             let currentDisplayedName = '';
+            let currentDisplayedSide = '';
             
             function updateName() {
                 fetch('/get-name')
                     .then(response => response.json())
                     .then(data => {
-                        // Only animate if the name has changed
+                        // Update name if changed
                         if (data.name !== currentDisplayedName) {
                             let displayElement = document.getElementById('displayName');
                             
@@ -125,6 +127,24 @@
                                 displayElement.classList.add('fadeIn');
                                 
                                 currentDisplayedName = data.name;
+                            }, 500);
+                        }
+                        
+                        // Update side if changed
+                        if (data.side && data.side !== currentDisplayedSide) {
+                            let sideElement = document.getElementById('displaySide');
+                            
+                            // Fade out current side
+                            sideElement.classList.remove('fadeIn');
+                            sideElement.classList.add('fadeOut');
+                            
+                            // After fade out, update side and fade in
+                            setTimeout(() => {
+                                sideElement.textContent = data.side;
+                                sideElement.classList.remove('fadeOut');
+                                sideElement.classList.add('fadeIn');
+                                
+                                currentDisplayedSide = data.side;
                             }, 500);
                         }
                     })
