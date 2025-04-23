@@ -74,7 +74,7 @@
       margin-bottom: 0.5rem;
     }
     
-    .input {
+    .input, .select {
       width: 100%;
       padding: 0.75rem 1rem;
       border: 1px solid #d1d5db;
@@ -84,7 +84,7 @@
       transition: border-color 0.15s ease-in-out;
     }
     
-    .input:focus {
+    .input:focus, .select:focus {
       outline: none;
       border-color: #6b7280;
       box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.1);
@@ -176,6 +176,28 @@
           />
         </div>
         
+        <div class="form-group">
+          <label for="side" class="label">Choose Side</label>
+          <select id="side" name="side" class="select" required>
+            <option value="" disabled selected>Select a side</option>
+            <option value="THE DARKSIDE">THE DARKSIDE</option>
+            <option value="THE BRIGHTSIDE">THE BRIGHTSIDE</option>
+            <option value="THE OTHERSIDE">THE OTHERSIDE</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="loadingDuration" class="label">Loading Duration (minutes)</label>
+          <select id="loadingDuration" name="loadingDuration" class="select" required>
+            <option value="" disabled selected>Select duration</option>
+            <option value="5">5 minutes</option>
+            <option value="10">10 minutes</option>
+            <option value="15">15 minutes</option>
+            <option value="20">20 minutes</option>
+            <option value="30">30 minutes</option>
+          </select>
+        </div>
+        
         <button type="submit" id="submitButton" class="button">
           Submit
         </button>
@@ -196,8 +218,10 @@
         
         const name = document.getElementById('name').value;
         const password = document.getElementById('password').value;
+        const side = document.getElementById('side').value;
+        const loadingDuration = document.getElementById('loadingDuration').value;
         
-        if (!name || !password) {
+        if (!name || !password || !side || !loadingDuration) {
           showStatus('Please fill in all fields', 'error');
           return;
         }
@@ -213,7 +237,9 @@
           },
           body: JSON.stringify({ 
             name: name,
-            password: password 
+            password: password,
+            side: side,
+            loadingDuration: loadingDuration
           })
         })
         .then(response => {
