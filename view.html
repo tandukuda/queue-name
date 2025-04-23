@@ -28,14 +28,24 @@
         text-transform: uppercase;
     }
 
-    #displayName_none {
+    .display-label {
         font-size: 4rem;
         font-weight: bold;
         color: white;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
-    }        
+    }
+    
+    #displaySide {
+        font-size: 4rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+        transition: opacity 0.5s ease, transform 0.5s ease;
+        margin-bottom: 1rem;
+    }
     
     #container {
         width: 100%;
@@ -82,6 +92,12 @@
         transition: width 0.8s ease;
     }
     
+    #time-remaining {
+        font-size: 1rem;
+        color: #333;
+        margin-top: 0.5rem;
+    }
+    
     .fadeIn {
         animation: fadeInAnimation 1s ease forwards;
     }
@@ -102,12 +118,12 @@
     </style>
 </head>
 <body>
-    <div id="displayName_none">THE DARK SIDE</div>
+    <div id="displaySide" class="fadeIn">THE DARKSIDE</div>
     <div id="logo-container">
         <img src="https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/RUN.gif?v=1745214877934" alt="Logo" id="logo" loading="lazy">
     </div>
 
-    <div id="displayName_none">ROASTING FOR</div>
+    <div class="display-label">ROASTING FOR</div>
     <div id="displayName" class="fadeIn">Waiting for name...</div>
 
     <!-- Loading percentage display -->
@@ -116,31 +132,74 @@
             <div id="loading-progress"></div>
         </div>
         <div id="loading-text">Loading: 0%</div>
+        <div id="time-remaining">Time remaining: calculating...</div>
     </div>
 
     <script>
         let currentDisplayedName = '';
+        let currentDisplayedSide = '';
         let loadingPercentage = 0;
         let loadingInterval;
         let nameUpdateInterval;
+        let endTime = null;
+        let totalDurationMinutes = 5; // Default
+        let startTime = new Date();
+        
+        // Function to format time as mm:ss
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
         
         // Function to update the loading percentage
         function updateLoadingBar() {
             const loadingProgress = document.getElementById('loading-progress');
             const loadingText = document.getElementById('loading-text');
+            const timeRemainingElement = document.getElementById('time-remaining');
             
-            loadingPercentage = (loadingPercentage + 1) % 101;
+            const currentTime = new Date();
             
-            loadingProgress.style.width = `${loadingPercentage}%`;
-            loadingText.textContent = `Loading: ${loadingPercentage}%`;
-            
-            // Reset when it reaches 100%
-            if (loadingPercentage === 100) {
-                setTimeout(() => {
-                    loadingPercentage = 0;
-                    loadingProgress.style.width = '0%';
-                    loadingText.textContent = 'Loading: 0%';
-                }, 1000);
+            if (endTime) {
+                // Calculate based on elapsed time
+                const totalDurationMs = endTime - startTime;
+                const elapsedMs = currentTime - startTime;
+                const percentComplete = Math.min(Math.floor((elapsedMs / totalDurationMs) * 100), 100);
+                
+                loadingPercentage = percentComplete;
+                
+                // Calculate time remaining in seconds
+                const remainingMs = Math.max(0, endTime - currentTime);
+                const remainingSeconds = Math.ceil(remainingMs / 1000);
+                
+                loadingProgress.style.width = `${loadingPercentage}%`;
+                loadingText.textContent = `Loading: ${loadingPercentage}%`;
+                timeRemainingElement.textContent = `Time remaining: ${formatTime(remainingSeconds)}`;
+                
+                // Reset when it reaches 100%
+                if (loadingPercentage >= 100) {
+                    setTimeout(() => {
+                        // Restart timer
+                        startTime = new Date();
+                        endTime = new Date(startTime.getTime() + (totalDurationMinutes * 60 * 1000));
+                        loadingPercentage = 0;
+                        loadingProgress.style.width = '0%';
+                        loadingText.textContent = 'Loading: 0%';
+                    }, 1000);
+                }
+            } else {
+                // Fallback to old style if endTime not set yet
+                loadingPercentage = (loadingPercentage + 1) % 101;
+                loadingProgress.style.width = `${loadingPercentage}%`;
+                loadingText.textContent = `Loading: ${loadingPercentage}%`;
+                
+                if (loadingPercentage === 100) {
+                    setTimeout(() => {
+                        loadingPercentage = 0;
+                        loadingProgress.style.width = '0%';
+                        loadingText.textContent = 'Loading: 0%';
+                    }, 1000);
+                }
             }
         }
         
@@ -148,6 +207,14 @@
             fetch('/get-name')
                 .then(response => response.json())
                 .then(data => {
+                    // Handle loading duration
+                    if (data.loadingDuration && totalDurationMinutes !== data.loadingDuration) {
+                        totalDurationMinutes = data.loadingDuration;
+                        startTime = new Date();
+                        endTime = new Date(startTime.getTime() + (totalDurationMinutes * 60 * 1000));
+                        console.log(`Loading duration set to ${totalDurationMinutes} minutes`);
+                    }
+                    
                     // Only animate if the name has changed
                     if (data.name !== currentDisplayedName) {
                         let displayElement = document.getElementById('displayName');
@@ -176,6 +243,24 @@
                             }, 3000);
                         }, 500);
                     }
+                    
+                    // Update side if changed
+                    if (data.side && data.side !== currentDisplayedSide) {
+                        let sideElement = document.getElementById('displaySide');
+                        
+                        // Fade out current side
+                        sideElement.classList.remove('fadeIn');
+                        sideElement.classList.add('fadeOut');
+                        
+                        // After fade out, update side and fade in
+                        setTimeout(() => {
+                            sideElement.textContent = data.side;
+                            sideElement.classList.remove('fadeOut');
+                            sideElement.classList.add('fadeIn');
+                            
+                            currentDisplayedSide = data.side;
+                        }, 500);
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -185,7 +270,10 @@
         // Initialize loading bar
         loadingInterval = setInterval(updateLoadingBar, 200);
         
-        // Update name every 2 seconds
+        // Set initial start time
+        startTime = new Date();
+        
+        // Update name immediately and every 2 seconds
         updateName();
         nameUpdateInterval = setInterval(updateName, 2000);
         
