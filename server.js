@@ -5,8 +5,10 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Store the current name in memory
+// Store the current values in memory
 let currentName = 'Waiting for name...';
+let currentSide = 'THE DARKSIDE';
+let currentLoadingDuration = 5;  // Default 5 minutes
 
 // Middleware
 app.use(bodyParser.json());
@@ -29,21 +31,43 @@ app.get('/led', (req, res) => {
 
 // Endpoint to update name
 app.post('/update-name', (req, res) => {
-    const { name, password } = req.body;
+    const { name, password, side, loadingDuration } = req.body;
     
     // Simple password protection (change this to your own secret)
-    if (password !== 'frontal01') {
+    if (password !== 'HERDWERK2025') {
         return res.status(403).json({ message: 'Unauthorized' });
     }
 
     currentName = name || 'Waiting for name...';
+    
+    // Update side and loading duration if provided
+    if (side) {
+        currentSide = side;
+    }
+    
+    if (loadingDuration) {
+        currentLoadingDuration = parseInt(loadingDuration, 10);
+    }
+    
     console.log('Name updated to:', currentName);
-    res.json({ message: 'Name updated successfully', name: currentName });
+    console.log('Side updated to:', currentSide);
+    console.log('Loading duration updated to:', currentLoadingDuration, 'minutes');
+    
+    res.json({ 
+        message: 'Information updated successfully', 
+        name: currentName,
+        side: currentSide,
+        loadingDuration: currentLoadingDuration
+    });
 });
 
-// Endpoint to get current name
+// Endpoint to get current settings
 app.get('/get-name', (req, res) => {
-    res.json({ name: currentName });
+    res.json({ 
+        name: currentName,
+        side: currentSide,
+        loadingDuration: currentLoadingDuration
+    });
 });
 
 // Start server
