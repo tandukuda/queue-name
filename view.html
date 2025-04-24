@@ -56,9 +56,8 @@
     }
     
     #logo {
-      height: 30rem; /* h-12 */
+      height: 26rem; /* h-12 */
       width: auto;
-      transition: opacity 0.5s ease;
     }
     
     /* Loading percentage styles */
@@ -157,23 +156,6 @@
             return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
         }
         
-        // Function to update the animation based on side
-        function updateAnimation(side) {
-            const logoElement = document.getElementById('logo');
-            
-            // Fade out the current animation
-            logoElement.style.opacity = '0';
-            
-            setTimeout(() => {
-                // Update the src with the new animation based on side
-                const animationUrl = sideAnimations[side] || sideAnimations['THE DARKSIDE']; // Default to DARKSIDE
-                logoElement.src = animationUrl;
-                
-                // Fade in the new animation
-                logoElement.style.opacity = '1';
-            }, 500);
-        }
-        
         // Function to update the loading percentage
         function updateLoadingBar() {
             const loadingProgress = document.getElementById('loading-progress');
@@ -225,10 +207,45 @@
             }
         }
         
+        // Function to update animation based on side
+        function updateAnimation(side) {
+            console.log("Updating animation for side:", side);
+            
+            // If we have an animation for this side
+            if (sideAnimations[side]) {
+                const logoElement = document.getElementById('logo');
+                const newAnimationUrl = sideAnimations[side];
+                
+                console.log("Changing animation to:", newAnimationUrl);
+                
+                // Only change if it's actually different
+                if (logoElement.src !== newAnimationUrl) {
+                    // Create a new image element
+                    const newImage = new Image();
+                    newImage.src = newAnimationUrl;
+                    newImage.id = 'logo';
+                    newImage.alt = 'Logo';
+                    newImage.style.height = '26rem';
+                    newImage.style.width = 'auto';
+                    
+                    // When new image is loaded, replace the old one
+                    newImage.onload = function() {
+                        const logoContainer = document.getElementById('logo-container');
+                        // Remove the old image
+                        logoContainer.removeChild(logoElement);
+                        // Add the new image
+                        logoContainer.appendChild(newImage);
+                    };
+                }
+            }
+        }
+        
         function updateName() {
             fetch('/get-name')
                 .then(response => response.json())
                 .then(data => {
+                    console.log("Received data:", data);
+                    
                     // Handle loading duration
                     if (data.loadingDuration && totalDurationMinutes !== data.loadingDuration) {
                         totalDurationMinutes = data.loadingDuration;
@@ -268,23 +285,32 @@
                     
                     // Update side if changed
                     if (data.side && data.side !== currentDisplayedSide) {
+                        console.log("Side changed from", currentDisplayedSide, "to", data.side);
                         let sideElement = document.getElementById('displaySide');
                         
                         // Fade out current side
                         sideElement.classList.remove('fadeIn');
                         sideElement.classList.add('fadeOut');
                         
-                        // After fade out, update side and fade in
+                        // Update animation based on new side
+                        updateAnimation(data.side);
+                        
+                        // After fade out, update side text and fade in
                         setTimeout(() => {
                             sideElement.textContent = data.side;
                             sideElement.classList.remove('fadeOut');
                             sideElement.classList.add('fadeIn');
                             
-                            // Update the animation based on the new side
-                            updateAnimation(data.side);
-                            
                             currentDisplayedSide = data.side;
                         }, 500);
+                    }
+                    
+                    // Initial load - set animation if side is available
+                    if (data.side && currentDisplayedSide === '') {
+                        console.log("Initial side set to:", data.side);
+                        currentDisplayedSide = data.side;
+                        document.getElementById('displaySide').textContent = data.side;
+                        updateAnimation(data.side);
                     }
                 })
                 .catch(error => {
@@ -297,6 +323,9 @@
         
         // Set initial start time
         startTime = new Date();
+        
+        // Initialize the currentDisplayedSide
+        currentDisplayedSide = document.getElementById('displaySide').textContent;
         
         // Update name immediately and every 2 seconds
         updateName();
