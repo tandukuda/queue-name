@@ -19,29 +19,26 @@
     }
         
     #displayName {
-        font-size: 4rem;
+        font-size: 3rem;
         font-weight: bold;
-        color: white;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        color: rgb(0, 0, 0);
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
         text-transform: uppercase;
     }
 
     .display-label {
-        font-size: 4rem;
+        font-size: 3rem;
         font-weight: bold;
-        color: white;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        color: rgb(0, 0, 0);
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
     }
     
     #displaySide {
-        font-size: 4rem;
+        font-size: 3rem;
         font-weight: bold;
-        color: white;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        color: rgb(0, 0, 0);
         text-align: center;
         transition: opacity 0.5s ease, transform 0.5s ease;
         margin-bottom: 1rem;
@@ -59,8 +56,9 @@
     }
     
     #logo {
-      height: 26rem; /* h-12 */
+      height: 30rem; /* h-12 */
       width: auto;
+      transition: opacity 0.5s ease;
     }
     
     /* Loading percentage styles */
@@ -145,11 +143,35 @@
         let totalDurationMinutes = 5; // Default
         let startTime = new Date();
         
+        // Map side names to their respective GIF URLs
+        const sideAnimations = {
+            'THE BRIGHTSIDE': 'https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/RUN-C.gif?v=1745473588331',
+            'THE DARKSIDE': 'https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/RUN.gif?v=1745214877934',
+            'THE OTHERSIDE': 'https://cdn.glitch.global/7db6e334-7269-42c1-a2b1-591ace8cc936/RUN-B.gif?v=1745473672985'
+        };
+        
         // Function to format time as mm:ss
         function formatTime(seconds) {
             const minutes = Math.floor(seconds / 60);
             const remainingSeconds = Math.floor(seconds % 60);
             return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+        
+        // Function to update the animation based on side
+        function updateAnimation(side) {
+            const logoElement = document.getElementById('logo');
+            
+            // Fade out the current animation
+            logoElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                // Update the src with the new animation based on side
+                const animationUrl = sideAnimations[side] || sideAnimations['THE DARKSIDE']; // Default to DARKSIDE
+                logoElement.src = animationUrl;
+                
+                // Fade in the new animation
+                logoElement.style.opacity = '1';
+            }, 500);
         }
         
         // Function to update the loading percentage
@@ -257,6 +279,9 @@
                             sideElement.textContent = data.side;
                             sideElement.classList.remove('fadeOut');
                             sideElement.classList.add('fadeIn');
+                            
+                            // Update the animation based on the new side
+                            updateAnimation(data.side);
                             
                             currentDisplayedSide = data.side;
                         }, 500);
