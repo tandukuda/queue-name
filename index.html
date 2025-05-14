@@ -264,7 +264,15 @@
         })
         .then(data => {
           showStatus('Name updated successfully!', 'success');
+          // Also send a request to resume display in case it was stopped
+          return fetch('/resume-display', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
         })
+        .then(response => response.json())
         .catch(error => {
           console.error('Error:', error);
           showStatus('Failed to update name. Please try again.', 'error');
@@ -295,11 +303,11 @@
           return response.json();
         })
         .then(data => {
-          showStatus('Display reset successfully!', 'success');
+          showStatus('Display stopped successfully!', 'success');
         })
         .catch(error => {
           console.error('Error:', error);
-          showStatus('Failed to reset display. Please try again.', 'error');
+          showStatus('Failed to stop display. Please try again.', 'error');
         })
         .finally(() => {
           // Re-enable button
