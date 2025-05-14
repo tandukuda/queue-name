@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 3000;
 let currentName = 'Waiting for name...';
 let currentSide = 'THE DARKSIDE';
 let currentLoadingDuration = 5;  // Default 5 minutes
+let displayStopped = false;
 
 // Middleware
 app.use(bodyParser.json());
