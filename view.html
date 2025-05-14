@@ -140,6 +140,7 @@
         let endTime = null;
         let totalDurationMinutes = 5; // Default
         let startTime = new Date();
+        let isDisplayStopped = false;
         
         // Map side names to their respective GIF URLs
         const sideAnimations = {
@@ -157,6 +158,10 @@
         
         // Function to update the loading percentage
         function updateLoadingBar() {
+            if (isDisplayStopped) {
+                return; // Don't update if display is stopped
+            }
+            
             const loadingProgress = document.getElementById('loading-progress');
             const loadingText = document.getElementById('loading-text');
             const timeRemainingElement = document.getElementById('time-remaining');
@@ -239,11 +244,57 @@
             }
         }
         
+        // Function to reset the display
+        function resetDisplay() {
+            isDisplayStopped = true;
+            
+            // Reset visuals
+            document.getElementById('displayName').textContent = 'Display stopped';
+            document.getElementById('loading-progress').style.width = '0%';
+            document.getElementById('loading-text').textContent = 'Loading: stopped';
+            document.getElementById('time-remaining').textContent = 'Time remaining: --:--';
+            
+            // Clear intervals
+            clearInterval(loadingInterval);
+            clearInterval(nameUpdateInterval);
+        }
+        
+        // Function to resume the display
+        function resumeDisplay() {
+            if (isDisplayStopped) {
+                isDisplayStopped = false;
+                
+                // Reset and restart everything
+                startTime = new Date();
+                endTime = new Date(startTime.getTime() + (totalDurationMinutes * 60 * 1000));
+                loadingPercentage = 0;
+                
+                // Restart intervals
+                loadingInterval = setInterval(updateLoadingBar, 200);
+                nameUpdateInterval = setInterval(updateName, 2000);
+                
+                // Update immediately
+                updateName();
+            }
+        }
+        
         function updateName() {
+            if (isDisplayStopped) {
+                return; // Don't update if display is stopped
+            }
+            
             fetch('/get-name')
                 .then(response => response.json())
                 .then(data => {
                     console.log("Received data:", data);
+                    
+                    // Check if display should be reset/stopped
+                    if (data.resetDisplay === true) {
+                        resetDisplay();
+                        return;
+                    } else if (isDisplayStopped) {
+                        resumeDisplay();
+                    }
                     
                     // Handle loading duration
                     if (data.loadingDuration && totalDurationMinutes !== data.loadingDuration) {
