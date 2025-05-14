@@ -134,6 +134,15 @@
       color: #b91c1c;
       display: block;
     }
+    
+    .button-stop {
+      background-color: #ef4444;
+      margin-top: 1rem;
+    }
+    
+    .button-stop:hover {
+      background-color: #dc2626;
+    }
   </style>
 </head>
 <body>
@@ -201,6 +210,10 @@
         <button type="submit" id="submitButton" class="button">
           Submit
         </button>
+        
+        <button type="button" id="stopButton" class="button button-stop">
+          Stop Display
+        </button>
 
         <div id="statusMessage" class="status-message"></div>
       </form>
@@ -211,6 +224,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('loginForm');
       const submitButton = document.getElementById('submitButton');
+      const stopButton = document.getElementById('stopButton');
       const statusMessage = document.getElementById('statusMessage');
 
       form.addEventListener('submit', function(event) {
@@ -259,6 +273,38 @@
           // Re-enable button
           submitButton.disabled = false;
           submitButton.textContent = 'Submit';
+        });
+      });
+      
+      // Add event listener for stop button
+      stopButton.addEventListener('click', function() {
+        // Disable button and show loading state
+        stopButton.disabled = true;
+        stopButton.textContent = 'Processing...';
+        
+        fetch('/reset-display', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          showStatus('Display reset successfully!', 'success');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showStatus('Failed to reset display. Please try again.', 'error');
+        })
+        .finally(() => {
+          // Re-enable button
+          stopButton.disabled = false;
+          stopButton.textContent = 'Stop Display';
         });
       });
       
