@@ -1,28 +1,3 @@
-// Function to reset the display
-        function resetDisplay() {
-            console.log("Resetting display - stopping all animations and timers");
-            isDisplayStopped = true;
-            
-            // Reset visuals
-            const displayNameElement = document.getElementById('displayName');
-            displayNameElement.classList.remove('fadeIn', 'fadeOut');
-            void displayNameElement.offsetWidth; // Force reflow to reset animations
-            displayNameElement.classList.add('fadeIn');
-            displayNameElement.textContent = 'DISPLAY STOPPED';
-            
-            // Reset loading elements
-            document.getElementById('loading-progress').style.width = '0%';
-            document.getElementById('loading-text').textContent = 'Loading: STOPPED';
-            document.getElementById('time-remaining').textContent = 'Time remaining: PAUSED';
-            
-            // Clear intervals to completely stop all updating
-            clearInterval(loadingInterval);
-            clearInterval(nameUpdateInterval);
-            
-            // We'll continue to poll for reset status, but less frequently
-            nameUpdateInterval = setInterval(checkResetStatus, 5000);
-        }
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -269,7 +244,7 @@
             }
         }
         
-        // Function to reset the display
+// Function to reset the display
         function resetDisplay() {
             console.log("Resetting display - stopping all animations and timers");
             isDisplayStopped = true;
