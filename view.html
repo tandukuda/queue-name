@@ -1,4 +1,26 @@
-<!DOCTYPE html>
+// Function to resume the display
+        function resumeDisplay() {
+            console.log("Resuming display");
+            if (isDisplayStopped) {
+                isDisplayStopped = false;
+                
+                // Reset and restart everything
+                startTime = new Date();
+                endTime = new Date(startTime.getTime() + (totalDurationMinutes * 60 * 1000));
+                loadingPercentage = 0;
+                
+                // Clear existing interval (if any)
+                clearInterval(nameUpdateInterval);
+                clearInterval(loadingInterval);
+                
+                // Restart intervals with proper frequencies
+                loadingInterval = setInterval(updateLoadingBar, 200);
+                nameUpdateInterval = setInterval(updateName, 2000);
+                
+                // Update immediately
+                updateName();
+            }
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -246,43 +268,45 @@
         
         // Function to reset the display
         function resetDisplay() {
+            console.log("Resetting display - stopping all animations and timers");
             isDisplayStopped = true;
             
             // Reset visuals
-            document.getElementById('displayName').textContent = 'Display stopped';
-            document.getElementById('loading-progress').style.width = '0%';
-            document.getElementById('loading-text').textContent = 'Loading: stopped';
-            document.getElementById('time-remaining').textContent = 'Time remaining: --:--';
+            const displayNameElement = document.getElementById('displayName');
+            displayNameElement.classList.remove('fadeIn', 'fadeOut');
+            void displayNameElement.offsetWidth; // Force reflow to reset animations
+            displayNameElement.classList.add('fadeIn');
+            displayNameElement.textContent = 'DISPLAY STOPPED';
             
-            // Clear intervals
+            // Reset loading elements
+            document.getElementById('loading-progress').style.width = '0%';
+            document.getElementById('loading-text').textContent = 'Loading: STOPPED';
+            document.getElementById('time-remaining').textContent = 'Time remaining: PAUSED';
+            
+            // Clear intervals to completely stop all updating
             clearInterval(loadingInterval);
             clearInterval(nameUpdateInterval);
+            
+            // We'll continue to poll for reset status, but less frequently
+            nameUpdateInterval = setInterval(checkResetStatus, 5000);
         }
         
-        // Function to resume the display
-        function resumeDisplay() {
-            if (isDisplayStopped) {
-                isDisplayStopped = false;
-                
-                // Reset and restart everything
-                startTime = new Date();
-                endTime = new Date(startTime.getTime() + (totalDurationMinutes * 60 * 1000));
-                loadingPercentage = 0;
-                
-                // Restart intervals
-                loadingInterval = setInterval(updateLoadingBar, 200);
-                nameUpdateInterval = setInterval(updateName, 2000);
-                
-                // Update immediately
-                updateName();
-            }
+        // Function to check if we should resume the display
+        function checkResetStatus() {
+            fetch('/get-name')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Checking reset status:", data);
+                    if (!data.resetDisplay && isDisplayStopped) {
+                        resumeDisplay();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking reset status:', error);
+                });
         }
         
         function updateName() {
-            if (isDisplayStopped) {
-                return; // Don't update if display is stopped
-            }
-            
             fetch('/get-name')
                 .then(response => response.json())
                 .then(data => {
@@ -292,8 +316,11 @@
                     if (data.resetDisplay === true) {
                         resetDisplay();
                         return;
-                    } else if (isDisplayStopped) {
-                        resumeDisplay();
+                    }
+                    
+                    // Don't proceed with updates if display is stopped
+                    if (isDisplayStopped) {
+                        return;
                     }
                     
                     // Handle loading duration
@@ -377,9 +404,24 @@
         // Initialize the currentDisplayedSide
         currentDisplayedSide = document.getElementById('displaySide').textContent;
         
-        // Update name immediately and every 2 seconds
-        updateName();
-        nameUpdateInterval = setInterval(updateName, 2000);
+        // First, check if display is already in reset state
+        fetch('/get-name')
+            .then(response => response.json())
+            .then(data => {
+                if (data.resetDisplay === true) {
+                    resetDisplay();
+                } else {
+                    // Only start regular updates if not in reset state
+                    updateName();
+                    nameUpdateInterval = setInterval(updateName, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking initial state:', error);
+                // Fallback to normal operation if can't check
+                updateName();
+                nameUpdateInterval = setInterval(updateName, 2000);
+            });
         
         // Clean up intervals when page is unloaded
         window.addEventListener('beforeunload', () => {
